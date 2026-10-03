@@ -53,12 +53,6 @@ class motion_executioner(Node):
         self.create_timer(0.1, self.timer_callback)
 
 
-    # TODO Part 5: Callback functions: complete the callback functions of the three sensors to log the proper data.
-    # To also log the time you need to use the rclpy Time class, each ros msg will come with a header, and then
-    # inside the header you have a stamp that has the time in seconds and nanoseconds, you should log it in nanoseconds as 
-    # such: Time.from_msg(imu_msg.header.stamp).nanoseconds
-    # You can save the needed fields into a list, and pass the list to the log_values function in utilities.py
-
     def imu_callback(self, imu_msg: Imu):
         acc_x=imu_msg.linear_acceleration.x
         acc_y=imu_msg.linear_acceleration.y
@@ -69,13 +63,23 @@ class motion_executioner(Node):
         self.imu_initialized=True
         
     def odom_callback(self, odom_msg: Odometry):
-        
-        ... # log odom msgs
-                
+        x=odom_msg.pose.pose.position.x
+        y=odom_msg.pose.pose.position.y
+        q=odom_msg.pose.pose.orientation
+        th=euler_from_quaternion([q.x, q.y, q.z, q.w])
+        stamp=Time.from_msg(odom_msg.header.stamp).nanoseconds
+
+        self.odom_logger.log_values([x, y, th, stamp])
+        self.odom_initialized=True
+
     def laser_callback(self, laser_msg: LaserScan):
-        
-        ... # log laser msgs with position msg at that time
-                
+        ranges=list(laser_msg.ranges)
+        angle_increment=laser_msg.angle_increment
+        stamp=Time.from_msg(laser_msg.header.stamp).nanoseconds
+
+        self.laser_logger.log_values(ranges+[angle_increment, stamp])
+        self.laser_initialized=True
+
     def timer_callback(self):
         
         if self.odom_initialized and self.laser_initialized and self.imu_initialized:
