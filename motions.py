@@ -20,8 +20,10 @@ from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy, HistoryPo
 
 CIRCLE=0; SPIRAL=1; ACC_LINE=2
 motion_types=['circle', 'spiral', 'line']
-MAX_VELOCITY= 0.3
 
+# Max velocity and angular velocity for the robot
+MAX_VELOCITY= 0.3
+MAX_ANGULAR_VELOCITY= 0.5
 class motion_executioner(Node):
     
     def __init__(self, motion_type=0):
@@ -104,25 +106,30 @@ class motion_executioner(Node):
             print("type not set successfully, 0: CIRCLE 1: SPIRAL and 2: ACCELERATED LINE")
             raise SystemExit 
 
+        # make sure the velocity and angular velocity are within the limits
+        if cmd_vel_msg.angular.z > MAX_ANGULAR_VELOCITY:
+            cmd_vel_msg.angular.z = MAX_ANGULAR_VELOCITY
         if cmd_vel_msg.linear.x > MAX_VELOCITY:
             cmd_vel_msg.linear.x = MAX_VELOCITY
             self.prev_velocity = MAX_VELOCITY
+        
+        # publish the command velocity message
         self.vel_publisher.publish(cmd_vel_msg)
         
     
-    # TODO Part 4: Motion functions: complete the functions to generate the proper messages corresponding to the desired motions of the robot
 
     def make_circular_twist(self):
         msg=Twist()
-        msg.linear.x=0.2
-        msg.angular.z=0.5
+        # Add linear and angular velocity to the message
+        msg.linear.x = 0.2
+        msg.angular.z = MAX_ANGULAR_VELOCITY
         return msg
 
     def make_spiral_twist(self):
         msg=Twist()
         self.radius_ += 0.05
         msg.linear.x = self.radius_
-        msg.angular.z = 0.5
+        msg.angular.z = MAX_ANGULAR_VELOCITY
         return msg
     
     def make_acc_line_twist(self):
