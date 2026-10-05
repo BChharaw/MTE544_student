@@ -22,8 +22,8 @@ CIRCLE=0; SPIRAL=1; ACC_LINE=2
 motion_types=['circle', 'spiral', 'line']
 
 # Max velocity and angular velocity for the robot
-MAX_VELOCITY= 0.3
-MAX_ANGULAR_VELOCITY= 0.5
+MAX_VELOCITY= 0.5
+MAX_ANGULAR_VELOCITY= 2.0
 class motion_executioner(Node):
     
     def __init__(self, motion_type=0):
@@ -32,14 +32,14 @@ class motion_executioner(Node):
         
         self.type=motion_type
         
-        self.radius_= 0.0
-        self.prev_velocity = 0.0
+        self.radius_= 1.5
+        self.prev_velocity = 0.5
         self.successful_init=False
         self.imu_initialized=False
         self.odom_initialized=False
         self.laser_initialized=False
-        
-        self.vel_publisher=self.create_publisher(Twist, 'cmd_vel', 10)
+        qos=QoSProfile(reliability=ReliabilityPolicy.RELIABLE, history=HistoryPolicy.KEEP_LAST, depth=5)      
+        self.vel_publisher=self.create_publisher(Twist, 'cmd_vel', qos)
                 
         # loggers
         self.imu_logger=Logger('imu_content_'+str(motion_types[motion_type])+'.csv', headers=["acc_x", "acc_y", "angular_z", "stamp"])
@@ -112,6 +112,8 @@ class motion_executioner(Node):
         if cmd_vel_msg.linear.x > MAX_VELOCITY:
             cmd_vel_msg.linear.x = MAX_VELOCITY
             self.prev_velocity = MAX_VELOCITY
+        elif cmd_vel_msg.linear.x < 0:
+            cmd_vel_msg.linear.x = 0.0
         
         # publish the command velocity message
         self.vel_publisher.publish(cmd_vel_msg)
@@ -122,19 +124,19 @@ class motion_executioner(Node):
         msg=Twist()
         # Add linear and angular velocity to the message
         msg.linear.x = 0.2
-        msg.angular.z = MAX_ANGULAR_VELOCITY
+        msg.angular.z = MAX_VELOCITY/self.radius_
         return msg
 
     def make_spiral_twist(self):
         msg=Twist()
-        self.radius_ += 0.05
+        self.radius_ -= 0.005
         msg.linear.x = self.radius_
         msg.angular.z = MAX_ANGULAR_VELOCITY
         return msg
     
     def make_acc_line_twist(self):
         msg=Twist()
-        self.prev_velocity += 0.01
+        self.prev_velocity += 0.1
         msg.angular.z = 0.0
         msg.linear.x = self.prev_velocity
         return msg
