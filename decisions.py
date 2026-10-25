@@ -29,7 +29,7 @@ class decision_maker(Node):
         super().__init__("decision_maker")
 
         #TODO Part 4: Create a publisher for the topic responsible for robot's motion
-        self.publisher=... 
+        self.publisher=self.create_publisher(publisher_msg,publishing_topic,qos_publisher)
 
         publishing_period=1/rate
         
@@ -62,7 +62,7 @@ class decision_maker(Node):
     def timerCallback(self):
         
         # TODO Part 3: Run the localization node
-        ...    # Remember that this file is already running the decision_maker node.
+        spin_once(self.localizer)
 
         if self.localizer.getPose()  is  None:
             print("waiting for odom msgs ....")
@@ -72,9 +72,9 @@ class decision_maker(Node):
         
         # TODO Part 3: Check if you reached the goal
         if type(self.goal) == list:
-            reached_goal=...
+            reached_goal=calculate_linear_error(self.localizer.getPose(),self.goal[-1])<0.05
         else: 
-            reached_goal=...
+            reached_goal=calculate_linear_error(self.localizer.getPose(),self.goal)<0.05
         
 
         if reached_goal:
@@ -85,12 +85,14 @@ class decision_maker(Node):
             self.controller.PID_linear.logger.save_log()
             
             #TODO Part 3: exit the spin
-            ... 
+            raise SystemExit
         
         velocity, yaw_rate = self.controller.vel_request(self.localizer.getPose(), self.goal, True)
 
         #TODO Part 4: Publish the velocity to move the robot
-        ... 
+        vel_msg.linear.x=velocity
+        vel_msg.angular.z=yaw_rate
+        self.publisher.publish(vel_msg)
 
 import argparse
 
@@ -107,9 +109,9 @@ def main(args=None):
 
     # TODO Part 4: instantiate the decision_maker with the proper parameters for moving the robot
     if args.motion.lower() == "point":
-        DM=decision_maker(...)
+        DM=decision_maker(Twist,'/cmd_vel',10,[-1.0,-1.0])
     elif args.motion.lower() == "trajectory":
-        DM=decision_maker(...)
+        DM=decision_maker(Twist,'/cmd_vel',10,[0.0,0.0],motion_type=TRAJECTORY_PLANNER)
     else:
         print("invalid motion type", file=sys.stderr)        
     

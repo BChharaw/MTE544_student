@@ -1,3 +1,5 @@
+from math import exp
+
 # Type of planner
 POINT_PLANNER=0; TRAJECTORY_PLANNER=1
 
@@ -24,8 +26,16 @@ class planner:
         return x, y
 
     # TODO Part 6: Implement the trajectories here
-    def trajectory_planner(self):
-        pass
+    def trajectory_planner(self,shape="parabola"):
+        points=[]
+        for i in range(51):
+            if shape=="parabola":
+                x=1.5*i/50
+                points.append([x,x**2])
+            else:
+                x=2.5*i/50
+                points.append([x,2/(1+exp(-2*x))-1])
+        return points
         # the return should be a list of trajectory points: [ [x1,y1], ..., [xn,yn]]
         # return 
 
