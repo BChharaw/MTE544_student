@@ -26,7 +26,7 @@ class planner:
         return x, y
 
     # TODO Part 6: Implement the trajectories here
-    def trajectory_planner(self,shape="parabola"):
+    def trajectory_planner(self,shape="sigmoid"):
         points=[]
         for i in range(51):
             if shape=="parabola":
