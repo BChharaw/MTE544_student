@@ -42,7 +42,7 @@ class decision_maker(Node):
     
     
         elif motion_type==TRAJECTORY_PLANNER:
-            self.controller=trajectoryController(klp=0.05, klv=0.5, kap=0.05, kav=0.6)
+            self.controller=trajectoryController(klp=0.8, klv=0.3, kap=2.2, kav=0.6)
             self.planner=planner(TRAJECTORY_PLANNER)
 
         else:
