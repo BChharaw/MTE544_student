@@ -37,7 +37,7 @@ class decision_maker(Node):
         # TODO Part 5: Tune your parameters here
     
         if motion_type == POINT_PLANNER:
-            self.controller=controller(klp=0.6, klv=0.5, kap=1.8, kav=0.6)
+            self.controller=controller(klp=0.8, klv=0.3, kap=2.2, kav=0.6)
             self.planner=planner(POINT_PLANNER)    
     
     
