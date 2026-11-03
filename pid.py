@@ -65,7 +65,7 @@ class PID_ctrl:
             # use constant dt if the messages arrived inconsistent
             # for example dt=0.1 overwriting the calculation          
             
-            # TODO Part 5: calculate the error dot 
+            #the error between samples, dt=0.1 if two stamps match
             if dt==0:
                 dt=0.1
             error_dot+=(self.history[i][0]-self.history[i-1][0])/dt
@@ -76,19 +76,20 @@ class PID_ctrl:
         # Compute the error integral
         sum_=0
         for hist in self.history:
-            # TODO Part 5: Gather the integration
+            #sum the errors in the history
             sum_+=hist[0]
         
+        #only the last errors are summed
         error_int=sum_*dt_avg
         
-        # TODO Part 4: Log your errors
+        #loggi error, error rate, integral and stamp... logging extravaganza :)
         self.logger.log_values([latest_error,error_dot,error_int,Time.from_msg(stamp).nanoseconds])
         
-        # TODO Part 4: Implement the control law of P-controller
+        #this is hte p gain error; fairly self explanatory 
         if self.type == P:
             return self.kp*latest_error
         
-        # TODO Part 5: Implement the control law corresponding to each type of controller
+        # setting up the methods for the different ways to control
         elif self.type == PD:
             return self.kp*latest_error+self.kv*error_dot
         

@@ -25,7 +25,7 @@ class planner:
         y = goalPoint[1]
         return x, y
 
-    # TODO Part 6: Implement the trajectories here
+    # points along the parabola or the sigmoid for x in [0, 2.5], change the shape using the if statement
     def trajectory_planner(self,shape="sigmoid"):
         points=[]
         for i in range(51):

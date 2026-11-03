@@ -83,7 +83,7 @@ class FileReader:
     
     
 
-# TODO Part 3: Implement the conversion from Quaternion to Euler Angles
+#quaternion to yaw 
 def euler_from_quaternion(quat):
     """
     Convert quaternion (w in last place) to euler roll, pitch, yaw.
@@ -91,6 +91,7 @@ def euler_from_quaternion(quat):
     """
 
     x,y,z,w=quat
+    #only yaw matters for a ground robot
     a=2*(w*z+x*y)
     b=1-2*(y*y+z*z)
     yaw=atan2(a,b)
@@ -99,7 +100,7 @@ def euler_from_quaternion(quat):
     return yaw
 
 
-#TODO Part 4: Implement the calculation of the linear error
+# this is the distance from the robot to the goal
 def calculate_linear_error(current_pose, goal_pose):
         
     # Compute the linear error in x and y
@@ -109,7 +110,7 @@ def calculate_linear_error(current_pose, goal_pose):
 
     return error_linear
 
-#TODO Part 4: Implement the calculation of the angular error
+# angular heading error between where the robot faces and the direction to the goal
 def calculate_angular_error(current_pose, goal_pose):
 
     # Compute the linear error in x and y
@@ -121,6 +122,7 @@ def calculate_angular_error(current_pose, goal_pose):
 
     # Remember to handle the cases where the angular error might exceed the range [-π, π]
 
+    #this part is so the robot always turns the shortest way
     if error_angular>M_PI:
         error_angular-=2*M_PI
     elif error_angular<-M_PI:

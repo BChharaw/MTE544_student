@@ -14,7 +14,7 @@ class controller:
     # Default gains of the controller for linear and angular motions
     def __init__(self, klp=5, klv=0.2, kli=0.2, kap=5, kav=0.2, kai=0.2):
         
-        # TODO Part 5 and 6: Modify the below lines to test your PD, PI, and PID controller
+        # the linear and angular compoentents... both use  PID, change PID to P, PD or PI
         self.PID_linear=PID_ctrl(PID, klp, klv, kli, filename_="linear.csv")
         self.PID_angular=PID_ctrl(PID, kap, kav, kai, filename_="angular.csv")
 
@@ -28,11 +28,11 @@ class controller:
         linear_vel=self.PID_linear.update([e_lin, pose[3]], status)
         angular_vel=self.PID_angular.update([e_ang, pose[3]], status)
         
-        # TODO Part 4: Add saturation limits for the robot linear and angular velocity
+        #generic limits for the the turtlebot 4 limits
 
         linear_vel=0.31 if linear_vel>0.31 else linear_vel
         angular_vel=1.9 if angular_vel>1.9 else angular_vel
-        angular_vel=-1.9 if angular_vel<-1.9 else angular_vel
+        angular_vel=-1.9 if angular_vel<-1.9 else angular_vel  #right turns are negative 
         
         return linear_vel, angular_vel
     
@@ -56,12 +56,10 @@ class trajectoryController(controller):
         linear_vel=self.PID_linear.update([e_lin, pose[3]], status)
         angular_vel=self.PID_angular.update([e_ang, pose[3]], status) 
 
-        # TODO Part 5: Add saturation limits for the robot linear and angular velocity
-
+        # generic linear and angular veloicty clamps 
         linear_vel=0.31 if linear_vel>0.31 else linear_vel
         angular_vel=1.9 if angular_vel>1.9 else angular_vel
-        angular_vel=-1.9 if angular_vel<-1.9 else angular_vel
-        
+        angular_vel=-1.9 if angular_vel<-1.9 else angular_vel  #right turns are negative 
         return linear_vel, angular_vel
 
     def lookFarFor(self, pose, listGoals):
