@@ -14,7 +14,7 @@ class controller:
     # Default gains of the controller for linear and angular motions
     def __init__(self, klp=5, klv=0.2, kli=0.2, kap=5, kav=0.2, kai=0.2):
         
-        # the linear and angular compoentents... both use  PID, change PID to P, PD or PI
+        # the linear and angular compontents... both use  PID, change PID to P, PD or PI
         self.PID_linear=PID_ctrl(PID, klp, klv, kli, filename_="linear.csv")
         self.PID_angular=PID_ctrl(PID, kap, kav, kai, filename_="angular.csv")
 

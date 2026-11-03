@@ -85,7 +85,7 @@ class PID_ctrl:
         #loggi error, error rate, integral and stamp... logging extravaganza :)
         self.logger.log_values([latest_error,error_dot,error_int,Time.from_msg(stamp).nanoseconds])
         
-        #this is hte p gain error; fairly self explanatory 
+        #this is the p gain error; fairly self explanatory 
         if self.type == P:
             return self.kp*latest_error
         
