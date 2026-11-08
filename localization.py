@@ -88,6 +88,6 @@ if __name__=="__main__":
     
     init()
     
-    LOCALIZER=localization()
+    LOCALIZER=localization(kalmanFilter, 0.1)
     
     spin(LOCALIZER)
