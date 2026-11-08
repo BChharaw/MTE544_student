@@ -29,7 +29,7 @@ class localization(Node):
 
         super().__init__("localizer")
 
-        elf.loc_logger=Logger( loggerName , loggerHeaders)
+        self.loc_logger=Logger( loggerName , loggerHeaders)
         self.pose=None
         
         if type==rawSensors:
@@ -45,45 +45,39 @@ class localization(Node):
         
     def initKalmanfilter(self, dt):
         
-        # TODO Part 3: Set up the quantities for the EKF (hint: you will need the functions for the states and measurements)
+        x=np.zeros(6) #state, robot starts at the origin wiht everything zero
+        Q=0.5*np.eye(6) #state noise, (0.5 from readme)
+        R=0.5*np.eye(4) #measurement noise (also 0.5 from readme)
+        P=np.eye(6) #initial cov matrix
         
-        x= ...
+        self.kf=kalman_filter(P,Q,R,x,dt)
         
-        Q= ...
-
-        R= ...
-        
-        P= ... # initial covariance
-        
-        self.kf=kalman_filter(P,Q,R, x, dt)
-        
-        # TODO Part 3: Use the odometry and IMU data for the EKF
-        self.odom_sub=message_filters.Subscriber(...)
-        self.imu_sub=message_filters.Subscriber(...)
+        self.odom_sub=message_filters.Subscriber(self,odom,"/odom",qos_profile=odom_qos) #v w come from odom
+        self.imu_sub=message_filters.Subscriber(self,Imu,"/imu",qos_profile=odom_qos) #ax ay come from the imu
         
         time_syncher=message_filters.ApproximateTimeSynchronizer([self.odom_sub, self.imu_sub], queue_size=10, slop=0.1)
         time_syncher.registerCallback(self.fusion_callback)
     
     def fusion_callback(self, odom_msg: odom, imu_msg: Imu):
         
-        # TODO Part 3: Use the EKF to perform state estimation
-        # Take the measurements
-        # your measurements are the linear velocity and angular velocity from odom msg
-        # and linear acceleration in x and y from the imu msg
-        # the kalman filter should do a proper integration to provide x,y and filter ax,ay
-        z=...
+        #measurements
+        z=np.array([odom_msg.twist.twist.linear.x, #v
+                    odom_msg.twist.twist.angular.z, #w
+                    imu_msg.linear_acceleration.x, #ax
+                    imu_msg.linear_acceleration.y]) #ay
         
-        # Implement the two steps for estimation
-        ...
+        self.kf.predict() #step 1 predict via motion model
+        self.kf.update(z) #step 2 correct the prediction with measurements
         
-        # Get the estimate
         xhat=self.kf.get_states()
 
-        # Update the pose estimate to be returned by getPose
-        self.pose=np.array(...)
+        self.pose=np.array([xhat[0],xhat[1],xhat[2],odom_msg.header.stamp]) #set pose
 
-        # TODO Part 4: log your data
-        self.loc_logger.log_values(...)
+        self.loc_logger.log_values([z[2],z[3], 
+                                    xhat[5],xhat[4]*xhat[3],
+                                    xhat[4],xhat[3],
+                                    xhat[0],xhat[1],
+                                    Time.from_msg(odom_msg.header.stamp).nanoseconds]) #log state and measurements
       
     def odom_callback(self, pose_msg):
         
