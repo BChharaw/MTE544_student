@@ -61,10 +61,7 @@ class localization(Node):
     def fusion_callback(self, odom_msg: odom, imu_msg: Imu):
         
         #measurements
-        z=np.array([odom_msg.twist.twist.linear.x, #v
-                    odom_msg.twist.twist.angular.z, #w
-                    imu_msg.linear_acceleration.x, #ax
-                    imu_msg.linear_acceleration.y]) #ay
+        z=np.array([odom_msg.twist.twist.linear.x, odom_msg.twist.twist.angular.z, imu_msg.linear_acceleration.x, imu_msg.linear_acceleration.y]) 
         
         self.kf.predict() #step 1 predict via motion model
         self.kf.update(z) #step 2 correct the prediction with measurements
@@ -73,11 +70,7 @@ class localization(Node):
 
         self.pose=np.array([xhat[0],xhat[1],xhat[2],odom_msg.header.stamp]) #set pose
 
-        self.loc_logger.log_values([z[2],z[3], 
-                                    xhat[5],xhat[4]*xhat[3],
-                                    xhat[4],xhat[3],
-                                    xhat[0],xhat[1],
-                                    Time.from_msg(odom_msg.header.stamp).nanoseconds]) #log state and measurements
+        self.loc_logger.log_values([z[2],z[3],xhat[5],xhat[4]*xhat[3],xhat[4],xhat[3],xhat[0],xhat[1],Time.from_msg(odom_msg.header.stamp).nanoseconds]) #log state and measurements
       
     def odom_callback(self, pose_msg):
         
