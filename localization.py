@@ -46,7 +46,7 @@ class localization(Node):
     def initKalmanfilter(self, dt):
         
         x=np.zeros(6) #state, robot starts at the origin wiht everything zero
-        Q=0.75*np.eye(6) #state noise, (0.5 from readme)
+        Q=0.6*np.eye(6) #state noise, (0.5 from readme)
         R=0.15*np.eye(4) #measurement noise (also 0.5 from readme)
         P=np.eye(6) #initial cov matrix
         
