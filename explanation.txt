@@ -1,0 +1,5 @@
+
+-we predict the robot’s pose and uncertainty using the motion model.
+- we then compare the predicted sensor readings with the actual odometry and IMU measurements.
+-we then corrrect the state estimate using the Kalman gain.
+
