@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb, bm}
+\usepackage{parskip}
+
+\begin{document}
+
+\section*{EKF Algorithm and Derivation}
+
+An EKF works by keeping a best guess of the robot's current state, $\bm{x}$, and of how
+uncertain that guess is, $P$. Each iteration predicts where the robot moved, then corrects
+that prediction using sensor data. The prediction and the measurements are weighted by how
+reliable each one is.
+
+Here, the state is $\bm{x} = [x,\ y,\ \theta,\ \omega,\ v,\ \dot v]^T$ and the
+measurements are odometry ($v,\omega$) and IMU ($a_x,a_y$) readings,
+$\bm{z} = [v,\ \omega,\ a_x,\ a_y]^T$. $P$ is the $6\times6$ state covariance. Its diagonal
+holds the variance of each state, and its off-diagonal terms describe how errors in
+different states are correlated. Each iteration ($dt = 0.1$\,s) has two steps.
+
+\subsection*{Prediction}
+\begin{equation*}
+\bm{x} = f(\bm{x}), \qquad P = APA^T + Q
+\end{equation*}
+The motion model $f$ moves the state forward one time step. $A$, its Jacobian, carries
+the existing uncertainty forward with the motion, and the process noise $Q$ adds
+uncertainty to account for model error. Prediction therefore always increases $P$.
+
+\textbf{Derivation.} We use unicycle kinematics, assuming $\omega$ and $\dot v$ are
+constant over $dt$ ($\theta$ is wrapped to $[-\pi,\pi]$). Differentiating each row of
+$f$ with respect to each state gives $A = \partial f/\partial\bm{x}$:
+\begin{equation*}
+f(\bm{x}) =
+\begin{bmatrix}
+x + v\cos\theta\,dt \\ y + v\sin\theta\,dt \\ \theta + \omega\,dt \\ \omega \\ v + \dot v\,dt \\ \dot v
+\end{bmatrix},
+\qquad
+A =
+\begin{bmatrix}
+1 & 0 & -v\sin\theta\,dt & 0 & \cos\theta\,dt & 0\\
+0 & 1 & v\cos\theta\,dt & 0 & \sin\theta\,dt & 0\\
+0 & 0 & 1 & dt & 0 & 0\\
+0 & 0 & 0 & 1 & 0 & 0\\
+0 & 0 & 0 & 0 & 1 & dt\\
+0 & 0 & 0 & 0 & 0 & 1
+\end{bmatrix}
+\end{equation*}
+The off-diagonal terms in the first two rows link heading and speed errors to position
+errors, which builds the correlations in $P$ that the update relies on.
+
+\subsection*{Update}
+\begin{align*}
+\bar{\bm{y}} &= \bm{z} - h(\bm{x}), & S &= CPC^T + R, & K &= PC^TS^{-1}, \\
+\bm{x} &= \bm{x} + K\bar{\bm{y}}, & P &= (I - KC)P
+\end{align*}
+The measurement model $h$ gives the readings expected at the predicted state, so the
+innovation $\bar{\bm{y}}$ is the difference between what the sensors read and what was
+expected. $S$ is the expected size of that difference: the state uncertainty, mapped into
+measurement space by the Jacobian $C$, plus the measurement noise $R$. The Kalman gain
+$K$ is the ratio of state uncertainty to total uncertainty. If $R$ is large relative to
+$P$, $K$ is small and the filter trusts the model. If $P$ dominates, the filter follows
+the sensors. The state is corrected by $K\bar{\bm{y}}$, and $P$ shrinks.
+
+\textbf{Derivation.} Odometry measures $v$ and $\omega$ directly. The IMU's forward
+acceleration is $\dot v$, and its lateral acceleration is the centripetal term
+$a_y = v^2/r = v\omega$ (using $r = v/\omega$). This gives $h$, and $C = \partial h/\partial\bm{x}$:
+\begin{equation*}
+h(\bm{x}) =
+\begin{bmatrix} v \\ \omega \\ \dot v \\ v\omega \end{bmatrix},
+\qquad
+C =
+\begin{bmatrix}
+0 & 0 & 0 & 0 & 1 & 0\\
+0 & 0 & 0 & 1 & 0 & 0\\
+0 & 0 & 0 & 0 & 0 & 1\\
+0 & 0 & 0 & v & \omega & 0
+\end{bmatrix}
+\end{equation*}
+The columns of $C$ for $x$, $y$ and $\theta$ are zero, because no sensor measures them.
+They are corrected only through their correlations in $P$, so their uncertainty grows
+over time.
+
+\subsection*{Linearization and tuning}
+$f$ (through $\cos\theta$, $\sin\theta$) and $h$ (through $v\omega$) are nonlinear, so the
+EKF linearizes them about the current estimate at every step. The exact functions
+propagate the state, and the Jacobians propagate the covariance. $A$ is evaluated at the
+previous state and $C$ at the predicted state.
+
+The filter starts at $\bm{x}_0 = \bm{0}$ with $P_0 = I_6$, and uses
+$Q = q I_6$ and $R = r I_4$. Using scaled identity matrices assumes independent noise of
+equal size in every state and sensor. The ratio $Q/R$ sets the tradeoff: a larger ratio
+tracks the measurements closely but is noisier, and a smaller ratio is smoother but lags.
+The final tuning was $q = 0.6$, $r = 0.15$.
+
+\end{document}
