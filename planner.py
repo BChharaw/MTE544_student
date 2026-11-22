@@ -5,10 +5,12 @@ from a_star import *
 POINT_PLANNER=0; TRAJECTORY_PLANNER=1
 
 class planner:
-    def __init__(self, type_, mapName="room"):
+    def __init__(self, type_, mapName="room", heuristic=EUCLIDEAN):
 
         self.type=type_
         self.mapName=mapName
+        self.heuristic=heuristic
+        self.pathCount=0
 
     
     def plan(self, startPose, endPose):
@@ -46,10 +48,17 @@ class planner:
         endPose=self.m_utilites.position_2_cell(endPoseCart)
         
         # Run A* on the cost map to get the path as a list of cells.
-        path = search(self.costMap, startPose, endPose)
+        path = search(self.costMap, startPose, endPose, self.heuristic)
+
+        if path is None:
+            print("no path found")
+            return None
 
         # Convert every cell on the path back into cartesian [x, y] coordinates.
         Path = list(map(self.m_utilites.cell_2_position, path))
+
+        np.savetxt(f"path_{self.heuristic}_{self.pathCount}.csv", Path, delimiter=",", header="x,y", comments="")
+        self.pathCount+=1
 
         # Return the path as a list of [x, y] waypoints.
         return [list(point) for point in Path]
