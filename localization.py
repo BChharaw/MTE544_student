@@ -22,7 +22,7 @@ import message_filters
 
 
 
-rawSensors=0; kalmanFilter=1
+rawSensors=1; kalmanFilter=0
 
 odom_qos=QoSProfile(reliability=2, durability=2, history=1, depth=10)
 
