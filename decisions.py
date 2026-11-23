@@ -44,7 +44,7 @@ class decision_maker(Node):
 
         self.reachThreshold=0.05
 
-        self.localizer=localization(kalmanFilter)
+        self.localizer=localization(rawSensors)
 
 
         

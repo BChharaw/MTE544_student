@@ -57,7 +57,7 @@ class trajectoryController(controller):
         angular_vel=self.PID_angular.update([e_ang, pose[3]], status) 
 
         linear_vel = 0.1 if linear_vel > 0.1 else linear_vel
-        angular_vel= 0.5 if angular_vel > 0.5 else angular_vel
+        angular_vel=max(-0.5, min(0.5, angular_vel))
 
 
         return linear_vel, angular_vel
