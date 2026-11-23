@@ -31,7 +31,7 @@ class planner:
 
 
         # A sigma of 0.4 m marks cells within ~0.27 m of an obstacle as walls (cost > 0.8), giving the robot clearance.
-        self.m_utilites=mapManipulator(laser_sig=0.5)
+        self.m_utilites=mapManipulator(laser_sig=0.55)
             
         self.costMap=self.m_utilites.make_likelihood_field()
         
